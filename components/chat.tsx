@@ -85,7 +85,7 @@ export function Chat({
         </div>
 
         {messages.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-2 w-full px-4 md:px-0 mx-auto md:max-w-[500px]">
+          <div className="grid sm:grid-cols-2 gap-2 w-full px-4 md:px-0 mx-auto md:max-w-[800px]">
             {suggestedActions.map((suggestedAction, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -114,7 +114,7 @@ export function Chat({
         )}
 
         <form
-          className="flex flex-row gap-2 relative items-center w-full md:max-w-[500px] max-w-[calc(100dvw-32px) px-4 md:px-0"
+          className="flex flex-row gap-2 relative items-center w-full md:max-w-[800px] max-w-[calc(100dvw-32px) px-4 md:px-0"
           onSubmit={handleSubmit}
         >
           <input

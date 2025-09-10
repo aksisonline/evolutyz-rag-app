@@ -207,30 +207,62 @@ export const Files = ({
               </div>
 
               <div
-                className="text-zinc-500 hover:bg-red-100 dark:text-zinc-500 hover:dark:bg-zinc-700 hover:text-red-500 p-1 px-2 cursor-pointer rounded-md"
+                className="text-zinc-500 hover:bg-red-100 dark:text-zinc-500 hover:dark:bg-zinc-700 hover:text-red-500 p-1 px-2 cursor-pointer rounded-md transition-colors duration-200"
+                title="Delete file and all associated data"
                 onClick={async () => {
+                  // Confirm deletion
+                  const confirmDelete = window.confirm(
+                    `Are you sure you want to delete "${file.pathname}"?\n\nThis will permanently remove all related data from the knowledge base and cannot be undone.`
+                  );
+                  if (!confirmDelete) return;
+
                   setDeleteQueue((currentQueue) => [
                     ...currentQueue,
                     file.pathname,
                   ]);
 
-                  // @ts-ignore
-                  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-                  await fetch(`${API_URL.replace(/\/$/, "")}/files/delete?fileurl=${encodeURIComponent(file.url)}`, {
-                    method: "DELETE",
-                  });
+                  try {
+                    // @ts-ignore
+                    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+                    const response = await fetch(`${API_URL.replace(/\/$/, "")}/files/delete?fileurl=${encodeURIComponent(file.pathname)}`, {
+                      method: "DELETE",
+                    });
 
-                  setDeleteQueue((currentQueue) =>
-                    currentQueue.filter(
-                      (filename) => filename !== file.pathname,
-                    ),
-                  );
+                    if (!response.ok) {
+                      throw new Error(`Failed to delete file: ${response.statusText}`);
+                    }
 
-                  setSelectedFilePathnames((currentSelections) =>
-                    currentSelections.filter((path) => path !== file.pathname),
-                  );
+                    const result = await response.json();
+                    if (result.status === "error") {
+                      throw new Error(result.message);
+                    }
 
-                  mutate(files.filter((f) => f.pathname !== file.pathname));
+                    // Show success message
+                    if (result.deleted_points) {
+                      console.log(`Successfully deleted file: ${file.pathname} (${result.deleted_points} data points removed)`);
+                    } else {
+                      console.log(result.message);
+                    }
+
+                    // Remove from selected files
+                    setSelectedFilePathnames((currentSelections) =>
+                      currentSelections.filter((path) => path !== file.pathname),
+                    );
+
+                    // Update the files list
+                    mutate(files?.filter((f) => f.pathname !== file.pathname));
+                    
+                    console.log(`Successfully deleted file: ${file.pathname}`);
+                  } catch (error) {
+                    console.error("Error deleting file:", error);
+                    alert(`Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                  } finally {
+                    setDeleteQueue((currentQueue) =>
+                      currentQueue.filter(
+                        (filename) => filename !== file.pathname,
+                      ),
+                    );
+                  }
                 }}
               >
                 <TrashIcon />

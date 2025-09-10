@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     "https://ai-sdk-preview-internal-knowledge-base.vercel.app",
   ),
-  title: "Internal Knowledge Base",
+  title: "Information Resource Assistant",
   description:
-    "Internal Knowledge Base using Retrieval Augmented Generation and Middleware",
+    "Information Resource Assistant using Retrieval Augmented Generation with Qdrant and Gemini",
 };
 
 export default function RootLayout({
