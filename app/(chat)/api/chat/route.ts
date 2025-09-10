@@ -50,9 +50,16 @@ export async function POST(request: Request) {
             for (const line of lines) {
               if (line.startsWith('data: ')) {
                 const content = line.slice(6); // Remove 'data: ' prefix
-                if (content.trim()) {
+                if (content === '') {
+                  // Empty data line represents a line break
+                  controller.enqueue(encoder.encode('\n'));
+                } else if (content.trim()) {
+                  // Regular content
                   controller.enqueue(encoder.encode(content));
                 }
+              } else if (line.trim() && !line.startsWith('event:') && !line.startsWith('id:')) {
+                // Handle lines that don't have the 'data: ' prefix but contain content
+                controller.enqueue(encoder.encode(line.trim()));
               }
             }
           }
@@ -67,6 +74,11 @@ export async function POST(request: Request) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
     
